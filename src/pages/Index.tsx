@@ -1,8 +1,9 @@
-
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Menu } from "lucide-react";
+import { TrendingUp, CreditCard, PiggyBank, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import Header from '@/components/layout/Header';
 
 const Index = () => {
   const features = [
@@ -34,43 +35,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      {/* Header Section */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-foreground">Money Moves Central</h1>
-            </div>
-            
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/expenses" className="text-muted-foreground hover:text-foreground transition-colors">
-                Expenses
-              </Link>
-              <Link to="/transactions" className="text-muted-foreground hover:text-foreground transition-colors">
-                Transactions
-              </Link>
-              <Link to="/portfolio" className="text-muted-foreground hover:text-foreground transition-colors">
-                Portfolio
-              </Link>
-            </nav>
-
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="hidden md:flex">
-                Sign In
-              </Button>
-              <Button className="hidden md:flex">
-                Get Started
-              </Button>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
+      <Header />
       <div className="container mx-auto px-4 py-16">
+        {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6 animate-fade-in">
             Take Control of Your Finances
@@ -137,7 +104,7 @@ const Index = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16 animate-fade-in">
+        <div className="text-center mt-16">
           <h2 className="text-3xl font-bold text-foreground mb-4">
             Ready to take control of your finances?
           </h2>
