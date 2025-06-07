@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const features = [
@@ -42,15 +43,15 @@ const Index = () => {
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="/expenses" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/expenses" className="text-muted-foreground hover:text-foreground transition-colors">
                 Expenses
-              </a>
-              <a href="/transactions" className="text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link to="/transactions" className="text-muted-foreground hover:text-foreground transition-colors">
                 Transactions
-              </a>
-              <a href="/portfolio" className="text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link to="/portfolio" className="text-muted-foreground hover:text-foreground transition-colors">
                 Portfolio
-              </a>
+              </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -102,13 +103,15 @@ const Index = () => {
                   <CardDescription className="text-muted-foreground mb-6 leading-relaxed">
                     {feature.description}
                   </CardDescription>
-                  <Button 
-                    variant="outline" 
-                    className="group/btn hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-                  >
-                    Get Started
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
-                  </Button>
+                  <Link to={feature.href}>
+                    <Button 
+                      variant="outline" 
+                      className="group/btn hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                    >
+                      Get Started
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             );
@@ -141,10 +144,12 @@ const Index = () => {
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
             Start managing your money smarter with our comprehensive suite of financial tools.
           </p>
-          <Button size="lg" className="px-8 py-3 text-lg">
-            Start Your Journey
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+          <Link to="/expenses">
+            <Button size="lg" className="px-8 py-3 text-lg">
+              Start Your Journey
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
