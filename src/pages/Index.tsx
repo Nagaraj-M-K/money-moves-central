@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, CreditCard, PiggyBank, ArrowRight } from "lucide-react";
+import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Menu } from "lucide-react";
 
 const Index = () => {
   const features = [
@@ -33,11 +33,46 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+      {/* Header Section */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-foreground">Money Moves Central</h1>
+            </div>
+            
+            <nav className="hidden md:flex items-center space-x-6">
+              <a href="/expenses" className="text-muted-foreground hover:text-foreground transition-colors">
+                Expenses
+              </a>
+              <a href="/transactions" className="text-muted-foreground hover:text-foreground transition-colors">
+                Transactions
+              </a>
+              <a href="/portfolio" className="text-muted-foreground hover:text-foreground transition-colors">
+                Portfolio
+              </a>
+            </nav>
+
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" className="hidden md:flex">
+                Sign In
+              </Button>
+              <Button className="hidden md:flex">
+                Get Started
+              </Button>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-foreground mb-6 animate-fade-in">
-            Money Moves Central
+            Take Control of Your Finances
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in">
             Your complete financial management solution. Track expenses, manage transactions, 
