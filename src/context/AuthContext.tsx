@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -13,6 +14,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,12 +43,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Signing in with:', email);
-      // TODO: Implement actual authentication
+      // Enhanced mock authentication with validation
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+      
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const mockUser = {
-        id: '1',
+        id: Date.now().toString(),
         email,
-        name: email.split('@')[0], // Use the part before @ as the name
-        photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`, // Generate avatar based on email
+        name: email.split('@')[0],
+        photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
       };
       console.log('Created mock user:', mockUser);
       setUser(mockUser);
@@ -54,19 +67,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('User data saved to localStorage');
     } catch (error) {
       console.error('Sign in error:', error);
-      throw new Error('Failed to sign in');
+      throw error;
     }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
       console.log('Signing up with:', { email, name });
-      // TODO: Implement actual registration
+      // Enhanced mock registration with validation
+      if (!email || !password || !name) {
+        throw new Error('All fields are required');
+      }
+      
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+
+      if (!/\S+@\S+\.\S+/.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const mockUser = {
-        id: '1',
+        id: Date.now().toString(),
         email,
         name,
-        photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`, // Generate avatar based on email
+        photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
       };
       console.log('Created mock user:', mockUser);
       setUser(mockUser);
@@ -74,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('User data saved to localStorage');
     } catch (error) {
       console.error('Sign up error:', error);
-      throw new Error('Failed to sign up');
+      throw error;
     }
   };
 
@@ -83,6 +111,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Signing out user:', user);
       setUser(null);
       localStorage.removeItem('user');
+      localStorage.removeItem('transactions');
+      localStorage.removeItem('watchlist');
       console.log('User data removed from localStorage');
     } catch (error) {
       console.error('Sign out error:', error);
@@ -90,8 +120,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: Partial<User>) => {
+    try {
+      if (!user) throw new Error('No user logged in');
+      
+      const updatedUser = { ...user, ...data };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
@@ -103,4 +146,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
