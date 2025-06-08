@@ -8,6 +8,7 @@ interface Stock {
   price?: number;
   change?: number;
   changePercent?: number;
+  market_cap?: number;
 }
 
 interface StockContextType {
@@ -84,4 +85,4 @@ export function useStock() {
     throw new Error('useStock must be used within a StockProvider');
   }
   return context;
-} 
+}

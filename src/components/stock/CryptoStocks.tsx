@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -141,7 +142,9 @@ export default function CryptoStocks() {
                       </Badge>
                     ) : '-'}
                   </TableCell>
-                  <TableCell>${(crypto.market_cap / 1000000).toFixed(2)}M</TableCell>
+                  <TableCell>
+                    {crypto.market_cap ? `$${(crypto.market_cap / 1000000).toFixed(2)}M` : '-'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
