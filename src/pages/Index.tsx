@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, CreditCard, PiggyBank, ArrowRight } from "lucide-react";
+import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from '@/components/layout/Header';
+import PremiumFeatures from '@/components/premium/PremiumFeatures';
 
 const Index = () => {
   const features = [
@@ -86,7 +88,7 @@ const Index = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-card rounded-2xl p-8 shadow-lg border animate-fade-in">
+        <div className="bg-card rounded-2xl p-8 shadow-lg border animate-fade-in mb-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
               <h3 className="text-3xl font-bold text-primary mb-2">₹0</h3>
@@ -101,6 +103,20 @@ const Index = () => {
               <p className="text-muted-foreground">Portfolio Growth</p>
             </div>
           </div>
+        </div>
+
+        {/* Premium Features Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Crown className="h-8 w-8 text-yellow-500" />
+              <h2 className="text-3xl font-bold text-foreground">Premium Features</h2>
+            </div>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Upgrade to unlock AI-powered insights, real-time alerts, and professional-grade analytics
+            </p>
+          </div>
+          <PremiumFeatures />
         </div>
 
         {/* CTA Section */}

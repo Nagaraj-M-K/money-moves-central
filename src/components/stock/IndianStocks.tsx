@@ -1,9 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useStock } from '@/context/StockContext';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface Stock {
   symbol: string;
@@ -11,18 +12,6 @@ interface Stock {
   price: number;
   change: number;
   changePercent: number;
-}
-
-interface NSEStock {
-  symbol: string;
-  name: string;
-  lastPrice: number;
-  change: number;
-  pChange: number;
-}
-
-interface NSEResponse {
-  data: NSEStock[];
 }
 
 export default function IndianStocks() {
@@ -36,44 +25,39 @@ export default function IndianStocks() {
     const fetchMarketData = async () => {
       try {
         setLoading(true);
-        // Fetch NIFTY 50 data from NSE India
-        const response = await fetch(
-          'https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050',
-          {
-            headers: {
-              'Accept': 'application/json',
-              'Accept-Language': 'en-US,en;q=0.9',
-              'User-Agent': 'Mozilla/5.0'
-            }
-          }
-        );
-        const data = await response.json() as NSEResponse;
         
-        if (!data.data || data.data.length === 0) {
-          throw new Error('No data available');
-        }
+        // Using mock data for Indian stocks since NSE API requires authentication
+        // In production, you would use a proper API service
+        const mockIndianStocks = [
+          { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2456.75, change: 45.30, changePercent: 1.88 },
+          { symbol: 'TCS', name: 'Tata Consultancy Services', price: 3567.20, change: -23.45, changePercent: -0.65 },
+          { symbol: 'HDFCBANK', name: 'HDFC Bank', price: 1654.30, change: 12.80, changePercent: 0.78 },
+          { symbol: 'INFY', name: 'Infosys', price: 1423.65, change: -8.90, changePercent: -0.62 },
+          { symbol: 'ICICIBANK', name: 'ICICI Bank', price: 987.45, change: 18.65, changePercent: 1.93 },
+          { symbol: 'BHARTIARTL', name: 'Bharti Airtel', price: 876.30, change: -5.45, changePercent: -0.62 },
+          { symbol: 'ITC', name: 'ITC Limited', price: 432.10, change: 3.25, changePercent: 0.76 },
+          { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', price: 1789.55, change: -12.30, changePercent: -0.68 },
+          { symbol: 'LT', name: 'Larsen & Toubro', price: 2345.80, change: 34.50, changePercent: 1.49 },
+          { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: 2567.90, change: -18.75, changePercent: -0.73 }
+        ];
 
-        // Sort stocks by percentage change
-        const sortedStocks = [...data.data].sort((a, b) => b.pChange - a.pChange);
-        
-        const gainers = sortedStocks.slice(0, 5).map((stock) => ({
-          symbol: stock.symbol,
-          name: stock.name,
-          price: stock.lastPrice,
-          change: stock.change,
-          changePercent: stock.pChange
+        // Add some randomization to make it feel more real
+        const randomizedStocks = mockIndianStocks.map(stock => ({
+          ...stock,
+          price: stock.price + (Math.random() - 0.5) * 20,
+          change: stock.change + (Math.random() - 0.5) * 10,
+          changePercent: stock.changePercent + (Math.random() - 0.5) * 2
         }));
+
+        const sortedStocks = [...randomizedStocks].sort((a, b) => b.changePercent - a.changePercent);
         
-        const losers = sortedStocks.slice(-5).reverse().map((stock) => ({
-          symbol: stock.symbol,
-          name: stock.name,
-          price: stock.lastPrice,
-          change: stock.change,
-          changePercent: stock.pChange
-        }));
+        setTopGainers(sortedStocks.slice(0, 5));
+        setTopLosers(sortedStocks.slice(-5).reverse());
         
-        setTopGainers(gainers);
-        setTopLosers(losers);
+        toast({
+          title: "Market Data",
+          description: "Showing simulated Indian market data. Connect to a real API for live prices.",
+        });
       } catch (error) {
         console.error('Error fetching market data:', error);
         toast({
@@ -87,8 +71,7 @@ export default function IndianStocks() {
     };
 
     fetchMarketData();
-    // Set up polling for real-time updates
-    const interval = setInterval(fetchMarketData, 60000); // Update every minute
+    const interval = setInterval(fetchMarketData, 300000); // Update every 5 minutes
     return () => clearInterval(interval);
   }, [toast]);
 
@@ -215,4 +198,4 @@ export default function IndianStocks() {
       </Card>
     </div>
   );
-} 
+}
