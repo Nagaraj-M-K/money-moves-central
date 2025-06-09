@@ -1,7 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface AuthUser {
   id: string;
   email: string;
   name: string;
@@ -9,62 +11,91 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
+  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-  updateProfile: (data: Partial<User>) => Promise<void>;
+  updateProfile: (data: Partial<AuthUser>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user data
-    const storedUser = localStorage.getItem('user');
-    console.log('Stored user data:', storedUser);
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        console.log('Parsed user data:', parsedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('user');
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session);
+        setSession(session);
+        
+        if (session?.user) {
+          // Create user profile
+          const authUser: AuthUser = {
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
+            photoURL: session.user.user_metadata?.avatar_url
+          };
+          setUser(authUser);
+
+          // Create or update profile in database
+          setTimeout(async () => {
+            const { error } = await supabase
+              .from('profiles')
+              .upsert({
+                user_id: session.user.id,
+                email: session.user.email,
+                full_name: authUser.name,
+                avatar_url: authUser.photoURL,
+                updated_at: new Date().toISOString()
+              });
+            
+            if (error) {
+              console.error('Error updating profile:', error);
+            }
+          }, 0);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session);
+      if (session) {
+        setSession(session);
+        const authUser: AuthUser = {
+          id: session.user.id,
+          email: session.user.email!,
+          name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
+          photoURL: session.user.user_metadata?.avatar_url
+        };
+        setUser(authUser);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Signing in with:', email);
-      // Enhanced mock authentication with validation
-      if (!email || !password) {
-        throw new Error('Email and password are required');
-      }
-      
-      if (password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-      }
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser = {
-        id: Date.now().toString(),
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        name: email.split('@')[0],
-        photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
-      };
-      console.log('Created mock user:', mockUser);
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      console.log('User data saved to localStorage');
+        password,
+      });
+
+      if (error) throw error;
+      
+      console.log('Sign in successful:', data);
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -73,33 +104,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      console.log('Signing up with:', { email, name });
-      // Enhanced mock registration with validation
-      if (!email || !password || !name) {
-        throw new Error('All fields are required');
-      }
-      
-      if (password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-      }
-
-      if (!/\S+@\S+\.\S+/.test(email)) {
-        throw new Error('Please enter a valid email address');
-      }
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser = {
-        id: Date.now().toString(),
+      const { data, error } = await supabase.auth.signUp({
         email,
-        name,
-        photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${email}`,
-      };
-      console.log('Created mock user:', mockUser);
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      console.log('User data saved to localStorage');
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: name,
+          }
+        }
+      });
+
+      if (error) throw error;
+      
+      console.log('Sign up successful:', data);
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
@@ -108,25 +126,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log('Signing out user:', user);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
       setUser(null);
-      localStorage.removeItem('user');
-      localStorage.removeItem('transactions');
-      localStorage.removeItem('watchlist');
-      console.log('User data removed from localStorage');
+      setSession(null);
+      console.log('Sign out successful');
     } catch (error) {
       console.error('Sign out error:', error);
-      throw new Error('Failed to sign out');
+      throw error;
     }
   };
 
-  const updateProfile = async (data: Partial<User>) => {
+  const updateProfile = async (data: Partial<AuthUser>) => {
     try {
       if (!user) throw new Error('No user logged in');
       
-      const updatedUser = { ...user, ...data };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      // Update auth metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { 
+          full_name: data.name,
+          avatar_url: data.photoURL 
+        }
+      });
+
+      if (authError) throw authError;
+
+      // Update profile table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: data.name,
+          avatar_url: data.photoURL,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (profileError) throw profileError;
+
+      setUser({ ...user, ...data });
     } catch (error) {
       console.error('Update profile error:', error);
       throw error;
@@ -134,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, updateProfile }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
