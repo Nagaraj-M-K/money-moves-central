@@ -39,7 +39,14 @@ const Transactions = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTransactions(data || []);
+      
+      // Ensure type casting for proper interface compliance
+      const typedTransactions = (data || []).map(transaction => ({
+        ...transaction,
+        type: transaction.type as 'credit' | 'debit'
+      }));
+      
+      setTransactions(typedTransactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast({
@@ -54,6 +61,32 @@ const Transactions = () => {
 
   useEffect(() => {
     fetchTransactions();
+  }, [user]);
+
+  // Set up real-time subscription for transactions
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          console.log('Transaction change detected, refreshing...');
+          fetchTransactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const handleAddTransaction = async (transactionData: any) => {
@@ -73,7 +106,12 @@ const Transactions = () => {
 
       if (error) throw error;
 
-      setTransactions(prev => [data, ...prev]);
+      const typedTransaction = {
+        ...data,
+        type: data.type as 'credit' | 'debit'
+      };
+
+      setTransactions(prev => [typedTransaction, ...prev]);
       toast({
         title: "Success",
         description: "Transaction added successfully"
@@ -102,7 +140,12 @@ const Transactions = () => {
 
       if (error) throw error;
 
-      setTransactions(prev => prev.map(t => t.id === id ? data : t));
+      const typedTransaction = {
+        ...data,
+        type: data.type as 'credit' | 'debit'
+      };
+
+      setTransactions(prev => prev.map(t => t.id === id ? typedTransaction : t));
       toast({
         title: "Success",
         description: "Transaction updated successfully"

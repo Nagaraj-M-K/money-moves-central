@@ -25,31 +25,38 @@ export function useUserData() {
   const [loading, setLoading] = useState(true);
 
   const fetchUserStats = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
 
-      // Fetch expenses
+      // Fetch expenses - user specific
       const { data: expenses } = await supabase
         .from('expenses')
         .select('amount')
         .eq('user_id', user.id);
 
-      // Fetch transactions
+      // Fetch transactions - user specific
       const { data: transactions } = await supabase
         .from('transactions')
         .select('*')
         .eq('user_id', user.id);
 
-      // Fetch watchlist
+      // Fetch watchlist - user specific
       const { data: watchlist } = await supabase
         .from('watchlist')
         .select('*')
         .eq('user_id', user.id);
 
-      const totalExpenses = (expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0) +
-                           (transactions?.filter(t => t.type === 'debit').reduce((sum, t) => sum + Number(t.amount), 0) || 0);
+      // Calculate totals from actual user data (starts at 0 for new users)
+      const expenseTotal = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      const transactionExpenses = transactions?.filter(t => t.type === 'debit')
+        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+      
+      const totalExpenses = expenseTotal + transactionExpenses;
       
       const credits = transactions?.filter(t => t.type === 'credit')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
@@ -57,10 +64,12 @@ export function useUserData() {
       const debits = transactions?.filter(t => t.type === 'debit')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
-      const netBalance = credits - debits - (expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0);
+      const netBalance = credits - debits - expenseTotal;
       
-      // Calculate portfolio growth (dummy calculation for now)
-      const portfolioGrowth = watchlist?.length ? Math.random() * 20 - 10 : 0;
+      // Portfolio growth calculation based on actual watchlist data
+      const portfolioGrowth = watchlist && watchlist.length > 0 
+        ? watchlist.reduce((avg, stock) => avg + (Number(stock.change_percent) || 0), 0) / watchlist.length
+        : 0;
 
       setStats({
         totalExpenses,
@@ -87,7 +96,7 @@ export function useUserData() {
     }
   }, [user]);
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions for live updates
   useEffect(() => {
     if (!user) return;
 
@@ -101,7 +110,10 @@ export function useUserData() {
           table: 'expenses',
           filter: `user_id=eq.${user.id}`
         },
-        () => fetchUserStats()
+        () => {
+          console.log('Expenses updated, refreshing stats...');
+          fetchUserStats();
+        }
       )
       .subscribe();
 
@@ -115,7 +127,10 @@ export function useUserData() {
           table: 'transactions',
           filter: `user_id=eq.${user.id}`
         },
-        () => fetchUserStats()
+        () => {
+          console.log('Transactions updated, refreshing stats...');
+          fetchUserStats();
+        }
       )
       .subscribe();
 
@@ -129,7 +144,10 @@ export function useUserData() {
           table: 'watchlist',
           filter: `user_id=eq.${user.id}`
         },
-        () => fetchUserStats()
+        () => {
+          console.log('Watchlist updated, refreshing stats...');
+          fetchUserStats();
+        }
       )
       .subscribe();
 

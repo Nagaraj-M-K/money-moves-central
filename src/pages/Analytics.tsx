@@ -15,12 +15,15 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
       
-      // Fetch transactions
+      // Fetch user-specific transactions
       const { data: transactionData, error: transactionError } = await supabase
         .from('transactions')
         .select('*')
@@ -29,7 +32,7 @@ const Analytics = () => {
 
       if (transactionError) throw transactionError;
 
-      // Fetch expenses
+      // Fetch user-specific expenses
       const { data: expenseData, error: expenseError } = await supabase
         .from('expenses')
         .select('*')
@@ -54,6 +57,50 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchData();
+  }, [user]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    if (!user) return;
+
+    const transactionsChannel = supabase
+      .channel('analytics-transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          console.log('Analytics: Transactions updated');
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    const expensesChannel = supabase
+      .channel('analytics-expenses')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expenses',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          console.log('Analytics: Expenses updated');
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(transactionsChannel);
+      supabase.removeChannel(expensesChannel);
+    };
   }, [user]);
 
   if (loading) {

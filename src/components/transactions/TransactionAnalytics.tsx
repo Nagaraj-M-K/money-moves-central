@@ -11,8 +11,9 @@ interface Transaction {
   category: string;
   description: string;
   date: string;
-  time: string;
-  timestamp: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface TransactionAnalyticsProps {
@@ -22,11 +23,11 @@ interface TransactionAnalyticsProps {
 export default function TransactionAnalytics({ transactions }: TransactionAnalyticsProps) {
   const totalCredits = transactions
     .filter(t => t.type === 'credit')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const totalDebits = transactions
     .filter(t => t.type === 'debit')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netBalance = totalCredits - totalDebits;
 
@@ -35,7 +36,7 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
     if (!acc[transaction.category]) {
       acc[transaction.category] = { total: 0, count: 0, type: transaction.type };
     }
-    acc[transaction.category].total += transaction.amount;
+    acc[transaction.category].total += Number(transaction.amount);
     acc[transaction.category].count += 1;
     return acc;
   }, {} as Record<string, { total: number; count: number; type: string }>);
@@ -60,17 +61,17 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
 
   const thisMonthCredits = thisMonthTransactions
     .filter(t => t.type === 'credit')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const thisMonthDebits = thisMonthTransactions
     .filter(t => t.type === 'debit')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-green-50/50 border-green-200">
+        <Card className="bg-green-50/50 border-green-200 hover-scale">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-green-700">
               <TrendingUp className="h-4 w-4" />
@@ -88,7 +89,7 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
           </CardContent>
         </Card>
 
-        <Card className="bg-red-50/50 border-red-200">
+        <Card className="bg-red-50/50 border-red-200 hover-scale">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-red-700">
               <TrendingDown className="h-4 w-4" />
@@ -106,7 +107,7 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
           </CardContent>
         </Card>
 
-        <Card className={`${netBalance >= 0 ? 'bg-green-50/50 border-green-200' : 'bg-red-50/50 border-red-200'}`}>
+        <Card className={`${netBalance >= 0 ? 'bg-green-50/50 border-green-200' : 'bg-red-50/50 border-red-200'} hover-scale`}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <BarChart3 className="h-4 w-4" />
@@ -124,7 +125,7 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-50/50 border-blue-200">
+        <Card className="bg-blue-50/50 border-blue-200 hover-scale">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-blue-700">
               <PieChart className="h-4 w-4" />
@@ -145,7 +146,7 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
 
       {/* Category Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="animate-scale-in">
           <CardHeader>
             <CardTitle className="text-lg">Top Expense Categories</CardTitle>
           </CardHeader>
@@ -170,13 +171,13 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No expense data available
+                No expense data available. Start adding your transactions!
               </p>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-scale-in">
           <CardHeader>
             <CardTitle className="text-lg">Top Income Sources</CardTitle>
           </CardHeader>
@@ -201,7 +202,7 @@ export default function TransactionAnalytics({ transactions }: TransactionAnalyt
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No income data available
+                No income data available. Start adding your transactions!
               </p>
             )}
           </CardContent>
