@@ -16,6 +16,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<AuthUser>) => Promise<void>;
 }
@@ -39,8 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const authUser: AuthUser = {
             id: session.user.id,
             email: session.user.email!,
-            name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
-            photoURL: session.user.user_metadata?.avatar_url
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email!.split('@')[0],
+            photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
           };
           setUser(authUser);
 
@@ -75,8 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const authUser: AuthUser = {
           id: session.user.id,
           email: session.user.email!,
-          name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
-          photoURL: session.user.user_metadata?.avatar_url
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email!.split('@')[0],
+          photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
         };
         setUser(authUser);
       }
@@ -98,6 +99,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Sign in successful:', data);
     } catch (error) {
       console.error('Sign in error:', error);
+      throw error;
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+
+      if (error) throw error;
+      
+      console.log('Google sign in initiated:', data);
+    } catch (error) {
+      console.error('Google sign in error:', error);
       throw error;
     }
   };
@@ -172,7 +191,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, updateProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      signIn, 
+      signUp, 
+      signInWithGoogle,
+      signOut, 
+      updateProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );

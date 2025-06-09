@@ -2,12 +2,17 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown } from "lucide-react";
+import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown, IndianRupee } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from '@/components/layout/Header';
 import PremiumFeatures from '@/components/premium/PremiumFeatures';
+import AIAssistant from '@/components/ai/AIAssistant';
+import AppGuide from '@/components/onboarding/AppGuide';
+import { useUserData } from '@/hooks/useUserData';
 
 const Index = () => {
+  const { stats, loading } = useUserData();
+
   const features = [
     {
       title: "Expenditure Tracker",
@@ -38,16 +43,52 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-foreground mb-6 animate-fade-in">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 animate-fade-in">
             Take Control of Your Finances
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in">
             Your complete financial management solution. Track expenses, manage transactions, 
             and monitor your investment portfolio all in one place.
           </p>
+        </div>
+
+        {/* AI Assistant and App Guide */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          <AIAssistant />
+          <AppGuide />
+        </div>
+
+        {/* Stats Section - User Specific Data */}
+        <div className="bg-card rounded-2xl p-6 md:p-8 shadow-lg border animate-fade-in mb-16">
+          <h2 className="text-2xl font-bold text-center mb-6">Your Financial Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="bg-red-50 p-4 rounded-xl">
+              <h3 className="text-2xl md:text-3xl font-bold text-red-600 mb-2 flex items-center justify-center">
+                <IndianRupee className="h-6 w-6 mr-1" />
+                {loading ? '...' : stats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </h3>
+              <p className="text-muted-foreground text-sm">Total Expenses</p>
+            </div>
+            <div className={`p-4 rounded-xl ${stats.netBalance >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+              <h3 className={`text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center ${stats.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <IndianRupee className="h-6 w-6 mr-1" />
+                {loading ? '...' : Math.abs(stats.netBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </h3>
+              <p className="text-muted-foreground text-sm">Net Balance</p>
+            </div>
+            <div className={`p-4 rounded-xl ${stats.portfolioGrowth >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+              <h3 className={`text-2xl md:text-3xl font-bold mb-2 ${stats.portfolioGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {loading ? '...' : (stats.portfolioGrowth >= 0 ? '+' : '')}{stats.portfolioGrowth.toFixed(1)}%
+              </h3>
+              <p className="text-muted-foreground text-sm">Portfolio Growth</p>
+            </div>
+          </div>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            {stats.transactionCount} transactions • {stats.watchlistCount} stocks in watchlist
+          </div>
         </div>
 
         {/* Features Grid */}
@@ -87,24 +128,6 @@ const Index = () => {
           })}
         </div>
 
-        {/* Stats Section */}
-        <div className="bg-card rounded-2xl p-8 shadow-lg border animate-fade-in mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <h3 className="text-3xl font-bold text-primary mb-2">₹0</h3>
-              <p className="text-muted-foreground">Total Expenses</p>
-            </div>
-            <div>
-              <h3 className="text-3xl font-bold text-primary mb-2">₹0</h3>
-              <p className="text-muted-foreground">Net Balance</p>
-            </div>
-            <div>
-              <h3 className="text-3xl font-bold text-primary mb-2">0%</h3>
-              <p className="text-muted-foreground">Portfolio Growth</p>
-            </div>
-          </div>
-        </div>
-
         {/* Premium Features Section */}
         <div className="mb-16">
           <div className="text-center mb-12">
@@ -120,8 +143,8 @@ const Index = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+        <div className="text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
             Ready to take control of your finances?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
