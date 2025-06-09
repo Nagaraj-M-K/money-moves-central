@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/AuthContext';
 import { StockProvider } from '@/context/StockContext';
+import { EnhancedStockProvider } from '@/context/EnhancedStockContext';
 import { UserProvider } from '@/context/UserContext';
 import Index from '@/pages/Index';
 import SignIn from '@/pages/SignIn';
@@ -22,20 +23,22 @@ function App() {
       <AuthProvider>
         <UserProvider>
           <StockProvider>
-            <Router>
-              <div className="min-h-screen bg-background">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/signin" element={<SignIn />} />
-                  <Route path="/signup" element={<SignUp />} />
-                  <Route path="/expenses" element={<Expenses />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/portfolio" element={<PortfolioPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
-              <Toaster />
-            </Router>
+            <EnhancedStockProvider>
+              <Router>
+                <div className="min-h-screen bg-background">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/expenses" element={<Expenses />} />
+                    <Route path="/transactions" element={<Transactions />} />
+                    <Route path="/portfolio" element={<PortfolioPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+                <Toaster />
+              </Router>
+            </EnhancedStockProvider>
           </StockProvider>
         </UserProvider>
       </AuthProvider>
