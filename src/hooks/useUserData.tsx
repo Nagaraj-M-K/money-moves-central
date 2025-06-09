@@ -48,7 +48,8 @@ export function useUserData() {
         .select('*')
         .eq('user_id', user.id);
 
-      const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      const totalExpenses = (expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0) +
+                           (transactions?.filter(t => t.type === 'debit').reduce((sum, t) => sum + Number(t.amount), 0) || 0);
       
       const credits = transactions?.filter(t => t.type === 'credit')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
@@ -56,7 +57,7 @@ export function useUserData() {
       const debits = transactions?.filter(t => t.type === 'debit')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
-      const netBalance = credits - debits - totalExpenses;
+      const netBalance = credits - debits - (expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0);
       
       // Calculate portfolio growth (dummy calculation for now)
       const portfolioGrowth = watchlist?.length ? Math.random() * 20 - 10 : 0;
@@ -84,6 +85,59 @@ export function useUserData() {
     if (user) {
       fetchUserStats();
     }
+  }, [user]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    if (!user) return;
+
+    const expensesChannel = supabase
+      .channel('expenses-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expenses',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => fetchUserStats()
+      )
+      .subscribe();
+
+    const transactionsChannel = supabase
+      .channel('transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => fetchUserStats()
+      )
+      .subscribe();
+
+    const watchlistChannel = supabase
+      .channel('watchlist-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'watchlist',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => fetchUserStats()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(expensesChannel);
+      supabase.removeChannel(transactionsChannel);
+      supabase.removeChannel(watchlistChannel);
+    };
   }, [user]);
 
   return { stats, loading, refetch: fetchUserStats };

@@ -4,6 +4,10 @@ import Header from '@/components/layout/Header';
 import TransactionForm from '@/components/transactions/TransactionForm';
 import TransactionList from '@/components/transactions/TransactionList';
 import TransactionAnalytics from '@/components/transactions/TransactionAnalytics';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -12,58 +16,144 @@ interface Transaction {
   category: string;
   description: string;
   date: string;
-  time: string;
-  timestamp: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('transactions');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: '1',
-        amount: 50000,
-        type: 'credit',
-        category: 'Salary',
-        description: 'Monthly salary from company',
-        date: '2024-01-15',
-        time: '09:00',
-        timestamp: new Date('2024-01-15T09:00').getTime()
-      },
-      {
-        id: '2',
-        amount: 1200,
-        type: 'debit',
-        category: 'Bills & Utilities',
-        description: 'Electricity bill payment',
-        date: '2024-01-15',
-        time: '14:30',
-        timestamp: new Date('2024-01-15T14:30').getTime()
-      },
-      {
-        id: '3',
-        amount: 800,
-        type: 'debit',
-        category: 'Food & Dining',
-        description: 'Grocery shopping at supermarket',
-        date: '2024-01-16',
-        time: '10:15',
-        timestamp: new Date('2024-01-16T10:15').getTime()
-      }
-    ];
-  });
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTransactions = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTransactions(data || []);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch transactions",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-  }, [transactions]);
+    fetchTransactions();
+  }, [user]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions(prev => [transaction, ...prev]);
+  const handleAddTransaction = async (transactionData: any) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([
+          {
+            ...transactionData,
+            user_id: user.id
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTransactions(prev => [data, ...prev]);
+      toast({
+        title: "Success",
+        description: "Transaction added successfully"
+      });
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add transaction",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
+  const handleUpdateTransaction = async (id: string, updatedData: any) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .update(updatedData)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTransactions(prev => prev.map(t => t.id === id ? data : t));
+      toast({
+        title: "Success",
+        description: "Transaction updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update transaction",
+        variant: "destructive"
+      });
+    }
   };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully"
+      });
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete transaction",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+        <Header />
+        <div className="container mx-auto px-4 py-6 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
@@ -85,6 +175,7 @@ const Transactions = () => {
               <TransactionList 
                 transactions={transactions} 
                 onDeleteTransaction={handleDeleteTransaction}
+                onUpdateTransaction={handleUpdateTransaction}
               />
             </div>
           </div>

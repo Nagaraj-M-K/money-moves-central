@@ -13,6 +13,7 @@ import SignUp from '@/pages/SignUp';
 import Profile from '@/pages/Profile';
 import Expenses from '@/pages/Expenses';
 import Transactions from '@/pages/Transactions';
+import Analytics from '@/pages/Analytics';
 import PortfolioPage from '@/pages/Portfolio';
 import NotFound from '@/pages/NotFound';
 import './App.css';
@@ -55,6 +56,11 @@ function AppRoutes() {
       <Route path="/transactions" element={
         <ProtectedRoute>
           <Transactions />
+        </ProtectedRoute>
+      } />
+      <Route path="/analytics" element={
+        <ProtectedRoute>
+          <Analytics />
         </ProtectedRoute>
       } />
       <Route path="/portfolio" element={

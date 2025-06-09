@@ -2,11 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown, IndianRupee } from "lucide-react";
+import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown, IndianRupee, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from '@/components/layout/Header';
 import PremiumFeatures from '@/components/premium/PremiumFeatures';
-import AIAssistant from '@/components/ai/AIAssistant';
 import AppGuide from '@/components/onboarding/AppGuide';
 import { useUserData } from '@/hooks/useUserData';
 
@@ -44,6 +43,17 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       <div className="container mx-auto px-4 py-8">
+        {/* Beta Notice */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-8 animate-fade-in">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-5 w-5 text-blue-600" />
+            <h3 className="font-semibold text-blue-900">Beta Version</h3>
+          </div>
+          <p className="text-sm text-blue-700">
+            You're using the beta version! In our next update, we're launching the Pro version with AI insights for stock portfolio analysis and advanced financial predictions.
+          </p>
+        </div>
+
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 animate-fade-in">
@@ -55,9 +65,8 @@ const Index = () => {
           </p>
         </div>
 
-        {/* AI Assistant and App Guide */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <AIAssistant />
+        {/* App Guide */}
+        <div className="mb-12">
           <AppGuide />
         </div>
 
@@ -65,28 +74,28 @@ const Index = () => {
         <div className="bg-card rounded-2xl p-6 md:p-8 shadow-lg border animate-fade-in mb-16">
           <h2 className="text-2xl font-bold text-center mb-6">Your Financial Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className="bg-red-50 p-4 rounded-xl animate-scale-in">
               <h3 className="text-2xl md:text-3xl font-bold text-red-600 mb-2 flex items-center justify-center">
                 <IndianRupee className="h-6 w-6 mr-1" />
                 {loading ? '...' : stats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </h3>
               <p className="text-muted-foreground text-sm">Total Expenses</p>
             </div>
-            <div className={`p-4 rounded-xl ${stats.netBalance >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+            <div className={`p-4 rounded-xl animate-scale-in ${stats.netBalance >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
               <h3 className={`text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center ${stats.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <IndianRupee className="h-6 w-6 mr-1" />
                 {loading ? '...' : Math.abs(stats.netBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </h3>
               <p className="text-muted-foreground text-sm">Net Balance</p>
             </div>
-            <div className={`p-4 rounded-xl ${stats.portfolioGrowth >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+            <div className={`p-4 rounded-xl animate-scale-in ${stats.portfolioGrowth >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
               <h3 className={`text-2xl md:text-3xl font-bold mb-2 ${stats.portfolioGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {loading ? '...' : (stats.portfolioGrowth >= 0 ? '+' : '')}{stats.portfolioGrowth.toFixed(1)}%
               </h3>
               <p className="text-muted-foreground text-sm">Portfolio Growth</p>
             </div>
           </div>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-center text-sm text-muted-foreground animate-fade-in">
             {stats.transactionCount} transactions • {stats.watchlistCount} stocks in watchlist
           </div>
         </div>
@@ -98,7 +107,7 @@ const Index = () => {
             return (
               <Card 
                 key={feature.title} 
-                className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-0 shadow-md animate-fade-in"
+                className="group hover:shadow-lg transition-all duration-300 hover:scale-105 border-0 shadow-md animate-fade-in hover-scale"
                 style={{ animationDelay: `${index * 150}ms` }}
               >
                 <CardHeader className="text-center pb-4">
