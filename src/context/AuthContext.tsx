@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { testSupabaseConnection } from '@/utils/supabaseTest';
 
 interface AuthUser {
   id: string;
@@ -29,6 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Test Supabase connection on mount
+    testSupabaseConnection().then((connected) => {
+      if (!connected) {
+        console.error('Failed to connect to Supabase');
+      }
+    });
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -45,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(authUser);
 
-          // Create or update profile in database
-          setTimeout(async () => {
+          // Create or update profile in database with better error handling
+          try {
             const { error } = await supabase
               .from('profiles')
               .upsert({
@@ -60,7 +68,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (error) {
               console.error('Error updating profile:', error);
             }
-          }, 0);
+          } catch (err) {
+            console.error('Profile update failed:', err);
+          }
         } else {
           setUser(null);
         }
@@ -69,7 +79,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session error:', error);
+      }
+      
       console.log('Initial session:', session);
       if (session) {
         setSession(session);
