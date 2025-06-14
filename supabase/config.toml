@@ -22,7 +22,11 @@ enabled = true
 # in emails.
 site_url = "http://localhost:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://linfqkihuyyyflindoit.supabase.co/auth/v1/callback"]
+additional_redirect_urls = [
+  "https://linfqkihuyyyflindoit.supabase.co/auth/v1/callback",
+  "http://localhost:3000/auth/callback",
+  "https://money-moves-app.lovable.app/auth/callback"
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604800 (1 week).
 jwt_expiry = 3600
 # If disabled, the refresh token will never expire.
@@ -42,6 +46,14 @@ double_confirm_email_changes = true
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = false
 
+# Enable Google OAuth
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+redirect_uri = "https://linfqkihuyyyflindoit.supabase.co/auth/v1/callback"
+
+# ... keep existing db, studio, inbucket, storage, edge_functions sections
 [db]
 # Port to use for the local database URL.
 port = 54322

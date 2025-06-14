@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -48,8 +47,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const authUser: AuthUser = {
             id: session.user.id,
             email: session.user.email!,
-            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email!.split('@')[0],
-            photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
+            name: session.user.user_metadata?.full_name || 
+                  session.user.user_metadata?.name || 
+                  session.user.user_metadata?.display_name ||
+                  session.user.email!.split('@')[0],
+            photoURL: session.user.user_metadata?.avatar_url || 
+                     session.user.user_metadata?.picture
           };
           setUser(authUser);
 
@@ -90,8 +93,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const authUser: AuthUser = {
           id: session.user.id,
           email: session.user.email!,
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email!.split('@')[0],
-          photoURL: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
+          name: session.user.user_metadata?.full_name || 
+                session.user.user_metadata?.name || 
+                session.user.user_metadata?.display_name ||
+                session.user.email!.split('@')[0],
+          photoURL: session.user.user_metadata?.avatar_url || 
+                   session.user.user_metadata?.picture
         };
         setUser(authUser);
       }
@@ -122,7 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
 

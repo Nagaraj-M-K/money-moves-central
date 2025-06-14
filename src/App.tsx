@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
@@ -17,6 +16,7 @@ import Analytics from '@/pages/Analytics';
 import PortfolioPage from '@/pages/Portfolio';
 import NotFound from '@/pages/NotFound';
 import './App.css';
+import { GoogleCallback } from '@/components/auth/GoogleCallback';
 
 const queryClient = new QueryClient();
 
@@ -38,6 +38,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/" replace />} />
       <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
+      <Route path="/auth/callback" element={<GoogleCallback />} />
       <Route path="/" element={
         <ProtectedRoute>
           <Index />
