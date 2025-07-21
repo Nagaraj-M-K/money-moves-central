@@ -39,11 +39,7 @@ function AppRoutes() {
       <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/" replace />} />
       <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
       <Route path="/auth/callback" element={<GoogleCallback />} />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
-      } />
+      <Route path="/" element={<Index />} />
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />

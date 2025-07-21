@@ -2,14 +2,16 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown, IndianRupee, Sparkles } from "lucide-react";
+import { TrendingUp, CreditCard, PiggyBank, ArrowRight, Crown, IndianRupee, Sparkles, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from '@/components/layout/Header';
 import PremiumFeatures from '@/components/premium/PremiumFeatures';
 import AppGuide from '@/components/onboarding/AppGuide';
 import { useUserData } from '@/hooks/useUserData';
+import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
+  const { user } = useAuth();
   const { stats, loading } = useUserData();
 
   const features = [
@@ -43,16 +45,38 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        {/* Beta Notice */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-8 animate-fade-in">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-5 w-5 text-blue-600" />
-            <h3 className="font-semibold text-blue-900">Beta Version</h3>
+        {/* Free Trial Notice */}
+        {!user && (
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-8 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-green-600" />
+                <h3 className="font-semibold text-green-900">You're in Free Trial Mode</h3>
+              </div>
+              <Link to="/signin">
+                <Button variant="outline" size="sm" className="border-green-200 text-green-700 hover:bg-green-100">
+                  Sign Up for Full Access
+                </Button>
+              </Link>
+            </div>
+            <p className="text-sm text-green-700 mt-2">
+              Explore all features with limited functionality. Sign up for full access to save your data and unlock premium features.
+            </p>
           </div>
-          <p className="text-sm text-blue-700">
-            You're using the beta version! In our next update, we're launching the Pro version with AI insights for stock portfolio analysis and advanced financial predictions.
-          </p>
-        </div>
+        )}
+
+        {/* Beta Notice */}
+        {user && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-8 animate-fade-in">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-5 w-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-900">Beta Version</h3>
+            </div>
+            <p className="text-sm text-blue-700">
+              You're using the beta version! In our next update, we're launching the Pro version with AI insights for stock portfolio analysis and advanced financial predictions.
+            </p>
+          </div>
+        )}
 
         {/* Hero Section */}
         <div className="text-center mb-12">
