@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session);
         setSession(session);
         
@@ -56,24 +56,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(authUser);
 
-          // Create or update profile in database with better error handling
-          try {
-            const { error } = await supabase
-              .from('profiles')
-              .upsert({
-                user_id: session.user.id,
-                email: session.user.email,
-                full_name: authUser.name,
-                avatar_url: authUser.photoURL,
-                updated_at: new Date().toISOString()
-              });
-            
-            if (error) {
-              console.error('Error updating profile:', error);
+          // Create or update profile in database asynchronously
+          setTimeout(async () => {
+            try {
+              const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                  user_id: session.user.id,
+                  email: session.user.email,
+                  full_name: authUser.name,
+                  avatar_url: authUser.photoURL,
+                  updated_at: new Date().toISOString()
+                });
+              
+              if (error) {
+                console.error('Error updating profile:', error);
+              }
+            } catch (err) {
+              console.error('Profile update failed:', err);
             }
-          } catch (err) {
-            console.error('Profile update failed:', err);
-          }
+          }, 0);
         } else {
           setUser(null);
         }

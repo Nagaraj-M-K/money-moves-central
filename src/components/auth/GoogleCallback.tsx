@@ -27,21 +27,32 @@ export function GoogleCallback() {
           return;
         }
 
-        // If we have a session, redirect to home
-        if (session) {
-          toast({
-            title: "Welcome!",
-            description: "Successfully signed in with Google.",
-          });
-          navigate('/');
-        }
+        // Wait a moment for session to be established
+        const timeout = setTimeout(() => {
+          if (session) {
+            toast({
+              title: "Welcome!",
+              description: "Successfully signed in with Google.",
+            });
+            navigate('/');
+          } else {
+            // If no session after timeout, redirect to signin
+            console.log('No session found after OAuth callback');
+            navigate('/signin');
+          }
+        }, 1000);
+
+        return () => clearTimeout(timeout);
       } catch (error) {
         console.error('OAuth callback error:', error);
         navigate('/signin');
       }
     };
 
-    handleOAuthCallback();
+    // Only run if we're not already processing
+    if (window.location.pathname === '/auth/callback') {
+      handleOAuthCallback();
+    }
   }, [session, navigate, toast]);
 
   return (

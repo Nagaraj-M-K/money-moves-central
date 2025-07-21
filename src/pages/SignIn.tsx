@@ -56,11 +56,7 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       await signInWithGoogle();
-      toast({
-        title: "Welcome!",
-        description: "You have successfully signed in with Google.",
-      });
-      navigate('/');
+      // Don't navigate or show success toast here - OAuth will redirect to callback
     } catch (error: any) {
       console.error('Google sign in error:', error);
       toast({
@@ -68,7 +64,6 @@ const SignIn = () => {
         description: "Failed to sign in with Google. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
