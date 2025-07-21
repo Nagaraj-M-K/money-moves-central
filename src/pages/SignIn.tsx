@@ -13,7 +13,7 @@ import { Eye, EyeOff, Mail, Lock, TrendingUp } from "lucide-react";
 const SignIn = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signInWithGoogle, signInDemo } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -62,6 +62,26 @@ const SignIn = () => {
       toast({
         title: "Sign In Failed",
         description: "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoSignIn = async () => {
+    try {
+      setIsLoading(true);
+      await signInDemo();
+      toast({
+        title: "Welcome!",
+        description: "You're now exploring with demo access.",
+      });
+      navigate('/');
+    } catch (error: any) {
+      console.error('Demo sign in error:', error);
+      toast({
+        title: "Demo Sign In Failed",
+        description: "Failed to start demo session. Please try again.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -174,6 +194,26 @@ const SignIn = () => {
               </Button>
             </form>
             
+            {/* Demo Sign In */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">Or try demo</span>
+              </div>
+            </div>
+
+            <Button
+              variant="secondary"
+              onClick={handleDemoSignIn}
+              disabled={isLoading}
+              className="w-full h-12 border-2 border-dashed hover:bg-gray-50 transition-all duration-200"
+            >
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Continue as Demo User
+            </Button>
+
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Don't have an account? </span>
               <Link 

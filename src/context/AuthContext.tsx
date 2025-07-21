@@ -17,6 +17,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInDemo: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<AuthUser>) => Promise<void>;
 }
@@ -148,6 +149,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInDemo = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+
+      if (error) throw error;
+      
+      console.log('Demo sign in successful:', data);
+    } catch (error) {
+      console.error('Demo sign in error:', error);
+      throw error;
+    }
+  };
+
   const signUp = async (email: string, password: string, name: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -225,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn, 
       signUp, 
       signInWithGoogle,
+      signInDemo,
       signOut, 
       updateProfile 
     }}>
