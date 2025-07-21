@@ -57,26 +57,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(authUser);
 
-          // Create or update profile in database asynchronously
-          setTimeout(async () => {
-            try {
-              const { error } = await supabase
-                .from('profiles')
-                .upsert({
-                  user_id: session.user.id,
-                  email: session.user.email,
-                  full_name: authUser.name,
-                  avatar_url: authUser.photoURL,
-                  updated_at: new Date().toISOString()
-                });
-              
-              if (error) {
-                console.error('Error updating profile:', error);
+          // Create or update profile in database asynchronously (skip for anonymous users)
+          if (!session.user.is_anonymous) {
+            setTimeout(async () => {
+              try {
+                const { error } = await supabase
+                  .from('profiles')
+                  .upsert({
+                    user_id: session.user.id,
+                    email: session.user.email,
+                    full_name: authUser.name,
+                    avatar_url: authUser.photoURL,
+                    updated_at: new Date().toISOString()
+                  }, {
+                    onConflict: 'user_id'
+                  });
+                
+                if (error && error.code !== '23505') {
+                  console.error('Error updating profile:', error);
+                }
+              } catch (err) {
+                console.error('Profile update failed:', err);
               }
-            } catch (err) {
-              console.error('Profile update failed:', err);
-            }
-          }, 0);
+            }, 0);
+          }
         } else {
           setUser(null);
         }
