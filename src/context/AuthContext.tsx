@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { testSupabaseConnection } from '@/utils/supabaseTest';
 
 interface AuthUser {
   id: string;
@@ -30,13 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Test Supabase connection on mount
-    testSupabaseConnection().then((connected) => {
-      if (!connected) {
-        console.error('Failed to connect to Supabase');
-      }
-    });
-
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -57,30 +49,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(authUser);
 
-          // Create or update profile in database asynchronously (skip for anonymous users)
-          if (!session.user.is_anonymous) {
-            setTimeout(async () => {
-              try {
-                const { error } = await supabase
-                  .from('profiles')
-                  .upsert({
-                    user_id: session.user.id,
-                    email: session.user.email,
-                    full_name: authUser.name,
-                    avatar_url: authUser.photoURL,
-                    updated_at: new Date().toISOString()
-                  }, {
-                    onConflict: 'user_id'
-                  });
-                
-                if (error && error.code !== '23505') {
-                  console.error('Error updating profile:', error);
-                }
-              } catch (err) {
-                console.error('Profile update failed:', err);
+          // Create profile for all users (authenticated and anonymous)
+          // Each user gets their own separate data space
+          setTimeout(async () => {
+            try {
+              const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                  user_id: session.user.id,
+                  email: session.user.email || null,
+                  full_name: authUser.name,
+                  avatar_url: authUser.photoURL || null,
+                  updated_at: new Date().toISOString()
+                }, {
+                  onConflict: 'user_id'
+                });
+              
+              if (error && error.code !== '23505') {
+                console.error('Error updating profile:', error);
               }
-            }, 0);
-          }
+            } catch (err) {
+              console.error('Profile update failed:', err);
+            }
+          }, 0);
         } else {
           setUser(null);
         }

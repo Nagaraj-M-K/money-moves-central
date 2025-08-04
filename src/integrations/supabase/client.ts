@@ -31,14 +31,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   },
 });
 
-// Test connection
-supabase.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    console.error('Supabase connection error:', error);
-  } else {
-    console.log('Supabase connected successfully');
-  }
-});
+// Supabase client is ready to use
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
