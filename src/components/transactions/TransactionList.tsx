@@ -18,9 +18,9 @@ interface Transaction {
   category: string;
   description: string;
   date: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface TransactionListProps {

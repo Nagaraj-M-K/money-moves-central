@@ -7,10 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -24,7 +24,7 @@ export type Database = {
           id: string
           title: string
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           amount: number
@@ -35,7 +35,7 @@ export type Database = {
           id?: string
           title: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           amount?: number
@@ -46,7 +46,7 @@ export type Database = {
           id?: string
           title?: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -60,7 +60,7 @@ export type Database = {
           subscription_status: string | null
           subscription_tier: string | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           avatar_url?: string | null
@@ -71,7 +71,7 @@ export type Database = {
           subscription_status?: string | null
           subscription_tier?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           avatar_url?: string | null
@@ -82,43 +82,43 @@ export type Database = {
           subscription_status?: string | null
           subscription_tier?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
       subscribers: {
         Row: {
-          created_at: string
+          created_at: string | null
           email: string
           id: string
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
           subscription_tier: string | null
-          updated_at: string
-          user_id: string | null
+          updated_at: string | null
+          user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           email: string
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
           subscription_tier?: string | null
-          updated_at?: string
-          user_id?: string | null
+          updated_at?: string | null
+          user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           email?: string
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
           subscription_tier?: string | null
-          updated_at?: string
-          user_id?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -132,7 +132,7 @@ export type Database = {
           id: string
           type: string
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           amount: number
@@ -143,7 +143,7 @@ export type Database = {
           id?: string
           type: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           amount?: number
@@ -154,7 +154,7 @@ export type Database = {
           id?: string
           type?: string
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -169,7 +169,7 @@ export type Database = {
           price: number | null
           stock_type: string
           symbol: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           added_at?: string | null
@@ -181,7 +181,7 @@ export type Database = {
           price?: number | null
           stock_type: string
           symbol: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           added_at?: string | null
@@ -193,7 +193,7 @@ export type Database = {
           price?: number | null
           stock_type?: string
           symbol?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }

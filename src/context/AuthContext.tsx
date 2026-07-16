@@ -145,12 +145,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInDemo = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInAnonymously();
+    const DEMO_KEY = 'money-moves-demo-credentials';
+    const stored = localStorage.getItem(DEMO_KEY);
 
-      if (error) throw error;
+    let demoEmail: string;
+    let demoPassword: string;
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      demoEmail = parsed.email;
+      demoPassword = parsed.password;
+    } else {
+      // Generate a unique demo account per browser/device
+      const id = Math.random().toString(36).substring(2, 15);
+      demoEmail = `demo-${id}@money.moves.app`;
+      demoPassword = `${Math.random().toString(36).substring(2)}${Date.now()}`;
+      localStorage.setItem(DEMO_KEY, JSON.stringify({ email: demoEmail, password: demoPassword }));
+    }
+
+    try {
+      // Try signing in first
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPassword,
+      });
+
+      if (!signInError) {
+        console.log('Demo sign in successful');
+        return;
+      }
+
+      // If account doesn't exist, create it
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: demoEmail,
+        password: demoPassword,
+        options: {
+          data: {
+            full_name: 'Demo User',
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
       
-      console.log('Demo sign in successful:', data);
+      console.log('Demo account created and signed in');
     } catch (error) {
       console.error('Demo sign in error:', error);
       throw error;

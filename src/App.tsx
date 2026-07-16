@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { StockProvider } from '@/context/StockContext';
 import { EnhancedStockProvider } from '@/context/EnhancedStockContext';
 import { UserProvider } from '@/context/UserContext';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+
 import Index from '@/pages/Index';
 import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
@@ -40,31 +40,11 @@ function AppRoutes() {
       <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
       <Route path="/auth/callback" element={<GoogleCallback />} />
       <Route path="/" element={<Index />} />
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <Profile />
-        </ProtectedRoute>
-      } />
-      <Route path="/expenses" element={
-        <ProtectedRoute>
-          <Expenses />
-        </ProtectedRoute>
-      } />
-      <Route path="/transactions" element={
-        <ProtectedRoute>
-          <Transactions />
-        </ProtectedRoute>
-      } />
-      <Route path="/analytics" element={
-        <ProtectedRoute>
-          <Analytics />
-        </ProtectedRoute>
-      } />
-      <Route path="/portfolio" element={
-        <ProtectedRoute>
-          <PortfolioPage />
-        </ProtectedRoute>
-      } />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/expenses" element={<Expenses />} />
+      <Route path="/transactions" element={<Transactions />} />
+      <Route path="/analytics" element={<Analytics />} />
+      <Route path="/portfolio" element={<PortfolioPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
