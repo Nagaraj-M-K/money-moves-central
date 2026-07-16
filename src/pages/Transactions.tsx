@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { getDemoData, addDemoItem, updateDemoItem, deleteDemoItem } from '@/lib/demoStorage';
 
 interface Transaction {
   id: string;
@@ -16,9 +17,9 @@ interface Transaction {
   category: string;
   description: string;
   date: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const Transactions = () => {
@@ -28,25 +29,27 @@ const Transactions = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchTransactions = async () => {
-    if (!user) return;
-
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      if (user) {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      // Ensure type casting for proper interface compliance
-      const typedTransactions = (data || []).map(transaction => ({
-        ...transaction,
-        type: transaction.type as 'credit' | 'debit'
-      }));
-      
-      setTransactions(typedTransactions);
+        if (error) throw error;
+        
+        const typedTransactions = (data || []).map(transaction => ({
+          ...transaction,
+          type: transaction.type as 'credit' | 'debit'
+        }));
+        
+        setTransactions(typedTransactions);
+      } else {
+        const demoData = getDemoData<Transaction>('transactions');
+        setTransactions(demoData);
+      }
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast({
@@ -63,7 +66,7 @@ const Transactions = () => {
     fetchTransactions();
   }, [user]);
 
-  // Set up real-time subscription for transactions
+  // Set up real-time subscription for transactions (authenticated users only)
   useEffect(() => {
     if (!user) return;
 
@@ -90,28 +93,35 @@ const Transactions = () => {
   }, [user]);
 
   const handleAddTransaction = async (transactionData: any) => {
-    if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .insert([
-          {
-            ...transactionData,
-            user_id: user.id
-          }
-        ])
-        .select()
-        .single();
+      if (user) {
+        const { data, error } = await supabase
+          .from('transactions')
+          .insert([
+            {
+              ...transactionData,
+              user_id: user.id
+            }
+          ])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const typedTransaction = {
-        ...data,
-        type: data.type as 'credit' | 'debit'
-      };
+        const typedTransaction = {
+          ...data,
+          type: data.type as 'credit' | 'debit'
+        };
 
-      setTransactions(prev => [typedTransaction, ...prev]);
+        setTransactions(prev => [typedTransaction, ...prev]);
+      } else {
+        const newTransaction = addDemoItem('transactions', {
+          ...transactionData,
+          type: transactionData.type as 'credit' | 'debit',
+        });
+        setTransactions(prev => [newTransaction, ...prev]);
+      }
+      
       toast({
         title: "Success",
         description: "Transaction added successfully"
@@ -127,25 +137,31 @@ const Transactions = () => {
   };
 
   const handleUpdateTransaction = async (id: string, updatedData: any) => {
-    if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .update(updatedData)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      if (user) {
+        const { data, error } = await supabase
+          .from('transactions')
+          .update(updatedData)
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const typedTransaction = {
-        ...data,
-        type: data.type as 'credit' | 'debit'
-      };
+        const typedTransaction = {
+          ...data,
+          type: data.type as 'credit' | 'debit'
+        };
 
-      setTransactions(prev => prev.map(t => t.id === id ? typedTransaction : t));
+        setTransactions(prev => prev.map(t => t.id === id ? typedTransaction : t));
+      } else {
+        const updated = updateDemoItem('transactions', id, updatedData);
+        if (updated) {
+          setTransactions(prev => prev.map(t => t.id === id ? updated as Transaction : t));
+        }
+      }
+      
       toast({
         title: "Success",
         description: "Transaction updated successfully"
@@ -161,16 +177,18 @@ const Transactions = () => {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (!user) return;
-
     try {
-      const { error } = await supabase
-        .from('transactions')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+      if (user) {
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        deleteDemoItem('transactions', id);
+      }
 
       setTransactions(prev => prev.filter(t => t.id !== id));
       toast({
