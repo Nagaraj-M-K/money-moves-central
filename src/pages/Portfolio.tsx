@@ -12,6 +12,16 @@ import CryptoSearch from "@/components/stock/CryptoSearch";
 
 
 export default function PortfolioPage() {
+  const navigate = useNavigate();
+  const [quickType, setQuickType] = useState<'us' | 'indian' | 'crypto'>('us');
+  const [quickSymbol, setQuickSymbol] = useState('');
+
+  const openChart = () => {
+    const sym = quickSymbol.trim().toUpperCase();
+    if (!sym) return;
+    navigate(`/stock/${quickType}/${sym}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
@@ -24,10 +34,34 @@ export default function PortfolioPage() {
             Track real-time market data, manage your watchlist, and make informed investment decisions
           </p>
         </div>
-        
+
+        <div className="mb-6 flex flex-wrap items-center gap-2 justify-center bg-white/70 rounded-lg p-3 shadow">
+          <span className="text-sm font-medium text-muted-foreground">Open advanced chart:</span>
+          <select
+            value={quickType}
+            onChange={(e) => setQuickType(e.target.value as any)}
+            className="h-10 rounded border px-2 text-sm bg-white"
+          >
+            <option value="us">US</option>
+            <option value="indian">Indian (NSE)</option>
+            <option value="crypto">Crypto</option>
+          </select>
+          <Input
+            placeholder="Symbol e.g. AAPL, RELIANCE, BTC"
+            value={quickSymbol}
+            onChange={(e) => setQuickSymbol(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && openChart()}
+            className="max-w-xs"
+          />
+          <Button onClick={openChart}>
+            <LineChart className="h-4 w-4 mr-1" /> View Chart
+          </Button>
+        </div>
+
         <Tabs defaultValue="us" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8 bg-white shadow-lg rounded-lg p-1 hover:shadow-xl transition-shadow duration-300">
             <TabsTrigger 
+
               value="us" 
               className="data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-200 hover:bg-blue-50 hover:scale-105"
             >
