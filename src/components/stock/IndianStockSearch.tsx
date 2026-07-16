@@ -355,7 +355,8 @@ export default function IndianStockSearch() {
                 {watchlist.map((stock, index) => (
                   <div
                     key={stock.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all duration-200 animate-fade-in"
+                    onClick={() => navigate(`/stock/indian/${stock.symbol}`)}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className="flex-1">
@@ -376,16 +377,17 @@ export default function IndianStockSearch() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeFromWatchlist(stock.id)}
-                      className="hover:scale-105 transition-transform"
-                    >
-                      Remove
-                    </Button>
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/stock/indian/${stock.symbol}`)}>
+                        <LineChart className="h-4 w-4 mr-1" /> Chart
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => removeFromWatchlist(stock.id)}>
+                        Remove
+                      </Button>
+                    </div>
                   </div>
                 ))}
+
               </div>
             )}
           </CardContent>
