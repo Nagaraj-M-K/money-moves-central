@@ -124,25 +124,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+      const { lovable } = await import('@/integrations/lovable/index');
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
       });
-
-      if (error) throw error;
-      
-      console.log('Google sign in initiated:', data);
+      if (result.error) throw result.error;
     } catch (error) {
       console.error('Google sign in error:', error);
       throw error;
     }
   };
+
 
   const signInDemo = async () => {
     const DEMO_KEY = 'money-moves-demo-credentials';

@@ -14,6 +14,8 @@ import Expenses from '@/pages/Expenses';
 import Transactions from '@/pages/Transactions';
 import Analytics from '@/pages/Analytics';
 import PortfolioPage from '@/pages/Portfolio';
+import StockDetail from '@/pages/StockDetail';
+
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { GoogleCallback } from '@/components/auth/GoogleCallback';
@@ -45,6 +47,8 @@ function AppRoutes() {
       <Route path="/transactions" element={<Transactions />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/portfolio" element={<PortfolioPage />} />
+      <Route path="/stock/:type/:symbol" element={<StockDetail />} />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
