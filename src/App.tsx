@@ -47,6 +47,8 @@ function AppRoutes() {
       <Route path="/transactions" element={<Transactions />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/portfolio" element={<PortfolioPage />} />
+      <Route path="/stock/:type/:symbol" element={<StockDetail />} />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
