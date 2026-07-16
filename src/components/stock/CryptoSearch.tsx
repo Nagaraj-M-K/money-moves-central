@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Loader2, Star, TrendingUp, TrendingDown } from "lucide-react";
+import { Search, Plus, Loader2, Star, TrendingUp, TrendingDown, LineChart } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
@@ -29,6 +31,8 @@ export default function CryptoSearch() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchCryptoData();
@@ -434,7 +438,8 @@ export default function CryptoSearch() {
                 {watchlist.map((crypto, index) => (
                   <div
                     key={crypto.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all duration-200 animate-fade-in"
+                    onClick={() => navigate(`/stock/crypto/${crypto.symbol}`)}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all duration-200 animate-fade-in cursor-pointer"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className="flex-1">
@@ -460,16 +465,17 @@ export default function CryptoSearch() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeFromWatchlist(crypto.id)}
-                      className="hover:scale-105 transition-transform"
-                    >
-                      Remove
-                    </Button>
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/stock/crypto/${crypto.symbol}`)}>
+                        <LineChart className="h-4 w-4 mr-1" /> Chart
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => removeFromWatchlist(crypto.id)}>
+                        Remove
+                      </Button>
+                    </div>
                   </div>
                 ))}
+
               </div>
             )}
           </CardContent>
