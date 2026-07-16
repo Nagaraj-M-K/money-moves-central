@@ -186,7 +186,8 @@ export default function EnhancedUSStockSearch() {
               {watchlist.filter(stock => stock.stockType === 'us').map((stock, index) => (
                 <div
                   key={`${stock.symbol}-${stock.stockType}`}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all animate-fade-in"
+                  onClick={() => navigate(`/stock/us/${stock.symbol}`)}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all animate-fade-in cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex-1">
@@ -205,20 +206,29 @@ export default function EnhancedUSStockSearch() {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    onClick={() => removeFromWatchlist(stock.symbol, stock.stockType)}
-                    size="sm"
-                    variant="destructive"
-                    className="hover:scale-105 transition-transform"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      onClick={() => navigate(`/stock/us/${stock.symbol}`)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <LineChart className="h-4 w-4 mr-1" /> Chart
+                    </Button>
+                    <Button
+                      onClick={() => removeFromWatchlist(stock.symbol, stock.stockType)}
+                      size="sm"
+                      variant="destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
     </div>
   );
 }
