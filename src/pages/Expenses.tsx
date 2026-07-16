@@ -19,9 +19,10 @@ interface Expense {
   category: string;
   description: string;
   date: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
+  title?: string;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const Expenses = () => {
