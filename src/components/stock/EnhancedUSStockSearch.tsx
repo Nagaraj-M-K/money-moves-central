@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEnhancedStock } from '@/context/EnhancedStockContext';
-import { Search, Plus, TrendingUp, TrendingDown, X, RefreshCw } from "lucide-react";
+import { Search, Plus, TrendingUp, TrendingDown, X, RefreshCw, LineChart } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function EnhancedUSStockSearch() {
   const [searchTerm, setSearchTerm] = useState('');
