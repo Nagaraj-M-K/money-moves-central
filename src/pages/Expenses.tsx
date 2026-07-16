@@ -71,15 +71,6 @@ const Expenses = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "Please sign in to add expenses",
-        variant: "destructive"
-      });
-      return;
-    }
 
     if (!formData.amount || !formData.category || !formData.description) {
       toast({
@@ -91,24 +82,35 @@ const Expenses = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .insert([
-          {
-            user_id: user.id,
-            title: formData.description,
-            amount: parseFloat(formData.amount),
-            category: formData.category,
-            description: formData.description,
-            date: formData.date,
-          }
-        ])
-        .select()
-        .single();
+      if (user) {
+        const { data, error } = await supabase
+          .from('expenses')
+          .insert([
+            {
+              user_id: user.id,
+              title: formData.description,
+              amount: parseFloat(formData.amount),
+              category: formData.category,
+              description: formData.description,
+              date: formData.date,
+            }
+          ])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
+        setExpenses([data, ...expenses]);
+      } else {
+        const newExpense = addDemoItem('expenses', {
+          title: formData.description,
+          amount: parseFloat(formData.amount),
+          category: formData.category,
+          description: formData.description,
+          date: formData.date,
+        });
+        setExpenses([newExpense, ...expenses]);
+      }
 
-      setExpenses([data, ...expenses]);
       setFormData({
         amount: '',
         category: '',
