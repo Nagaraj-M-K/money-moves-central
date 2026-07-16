@@ -10,6 +10,7 @@ import { PlusCircle, Calendar, IndianRupee, TrendingDown, Loader2 } from "lucide
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getDemoData, addDemoItem, deleteDemoItem } from '@/lib/demoStorage';
 import Header from '@/components/layout/Header';
 
 interface Expense {
