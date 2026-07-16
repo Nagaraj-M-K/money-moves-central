@@ -13,7 +13,8 @@ import { Eye, EyeOff, Mail, Lock, TrendingUp } from "lucide-react";
 const SignIn = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { signIn, signInDemo } = useAuth();
+  const { signIn, signInDemo, signInWithGoogle } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
