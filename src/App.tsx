@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { StockProvider } from '@/context/StockContext';
 import { EnhancedStockProvider } from '@/context/EnhancedStockContext';
 import { UserProvider } from '@/context/UserContext';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { DemoGuard } from '@/components/auth/DemoGuard';
 import Index from '@/pages/Index';
 import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
@@ -41,29 +41,29 @@ function AppRoutes() {
       <Route path="/auth/callback" element={<GoogleCallback />} />
       <Route path="/" element={<Index />} />
       <Route path="/profile" element={
-        <ProtectedRoute>
+        <DemoGuard>
           <Profile />
-        </ProtectedRoute>
+        </DemoGuard>
       } />
       <Route path="/expenses" element={
-        <ProtectedRoute>
+        <DemoGuard>
           <Expenses />
-        </ProtectedRoute>
+        </DemoGuard>
       } />
       <Route path="/transactions" element={
-        <ProtectedRoute>
+        <DemoGuard>
           <Transactions />
-        </ProtectedRoute>
+        </DemoGuard>
       } />
       <Route path="/analytics" element={
-        <ProtectedRoute>
+        <DemoGuard>
           <Analytics />
-        </ProtectedRoute>
+        </DemoGuard>
       } />
       <Route path="/portfolio" element={
-        <ProtectedRoute>
+        <DemoGuard>
           <PortfolioPage />
-        </ProtectedRoute>
+        </DemoGuard>
       } />
       <Route path="*" element={<NotFound />} />
     </Routes>
