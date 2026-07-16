@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { getDemoData } from '@/lib/demoStorage';
 
 const Analytics = () => {
   const { user } = useAuth();
@@ -15,34 +16,35 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       
-      // Fetch user-specific transactions
-      const { data: transactionData, error: transactionError } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      if (user) {
+        // Fetch user-specific transactions
+        const { data: transactionData, error: transactionError } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (transactionError) throw transactionError;
+        if (transactionError) throw transactionError;
 
-      // Fetch user-specific expenses
-      const { data: expenseData, error: expenseError } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        // Fetch user-specific expenses
+        const { data: expenseData, error: expenseError } = await supabase
+          .from('expenses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (expenseError) throw expenseError;
+        if (expenseError) throw expenseError;
 
-      setTransactions(transactionData || []);
-      setExpenses(expenseData || []);
+        setTransactions(transactionData || []);
+        setExpenses(expenseData || []);
+      } else {
+        // Fetch from localStorage for demo/free trial users
+        setTransactions(getDemoData('transactions'));
+        setExpenses(getDemoData('expenses'));
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -59,7 +61,7 @@ const Analytics = () => {
     fetchData();
   }, [user]);
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions (authenticated users only)
   useEffect(() => {
     if (!user) return;
 
