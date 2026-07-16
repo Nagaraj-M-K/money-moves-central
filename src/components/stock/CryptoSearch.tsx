@@ -31,6 +31,8 @@ export default function CryptoSearch() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchCryptoData();
