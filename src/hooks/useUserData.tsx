@@ -99,9 +99,7 @@ export function useUserData() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchUserStats();
-    }
+    fetchUserStats();
   }, [user]);
 
   // Set up real-time subscriptions for live updates
