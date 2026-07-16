@@ -39,17 +39,20 @@ const Expenses = () => {
   const categories = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Bills', 'Healthcare', 'Education', 'Other'];
 
   const fetchExpenses = async () => {
-    if (!user) return;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      if (user) {
+        const { data, error } = await supabase
+          .from('expenses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setExpenses(data || []);
+        if (error) throw error;
+        setExpenses(data || []);
+      } else {
+        setExpenses(getDemoData('expenses'));
+      }
     } catch (error) {
       console.error('Error fetching expenses:', error);
       toast({
