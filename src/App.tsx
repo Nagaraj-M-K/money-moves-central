@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { StockProvider } from '@/context/StockContext';
 import { EnhancedStockProvider } from '@/context/EnhancedStockContext';
 import { UserProvider } from '@/context/UserContext';
-import { DemoGuard } from '@/components/auth/DemoGuard';
+
 import Index from '@/pages/Index';
 import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
