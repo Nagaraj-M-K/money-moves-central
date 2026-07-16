@@ -43,8 +43,8 @@ export function setDemoData<T>(table: string, data: T[]) {
   localStorage.setItem(getDemoStorageKey(table), JSON.stringify(data));
 }
 
-export function addDemoItem<T extends Record<string, any>>(table: string, item: T): T {
-  const data = getDemoData<T>(table);
+export function addDemoItem<T extends Record<string, any>>(table: string, item: T): T & { id: string; created_at: string; updated_at: string } {
+  const data = getDemoData<T & { id: string; created_at: string; updated_at: string }>(table);
   const now = new Date().toISOString();
   const newItem = {
     ...item,
