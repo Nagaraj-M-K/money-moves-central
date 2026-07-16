@@ -1,9 +1,15 @@
 
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { LineChart } from "lucide-react";
 import Header from '@/components/layout/Header';
 import EnhancedUSStockSearch from "@/components/stock/EnhancedUSStockSearch";
 import IndianStockSearch from "@/components/stock/IndianStockSearch";
 import CryptoSearch from "@/components/stock/CryptoSearch";
+
 
 export default function PortfolioPage() {
   return (
