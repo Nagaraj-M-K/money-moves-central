@@ -16,6 +16,9 @@ export default function EnhancedUSStockSearch() {
   const [searching, setSearching] = useState(false);
   const { watchlist, addToWatchlist, removeFromWatchlist, searchStocks, getRealTimePrice, loading } = useEnhancedStock();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const { toast } = useToast();
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
