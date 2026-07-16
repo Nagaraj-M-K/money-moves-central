@@ -42,6 +42,8 @@ export default function IndianStockSearch() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     // Simulate real-time data with slight variations
