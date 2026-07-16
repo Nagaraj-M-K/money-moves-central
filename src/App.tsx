@@ -40,31 +40,11 @@ function AppRoutes() {
       <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
       <Route path="/auth/callback" element={<GoogleCallback />} />
       <Route path="/" element={<Index />} />
-      <Route path="/profile" element={
-        <DemoGuard>
-          <Profile />
-        </DemoGuard>
-      } />
-      <Route path="/expenses" element={
-        <DemoGuard>
-          <Expenses />
-        </DemoGuard>
-      } />
-      <Route path="/transactions" element={
-        <DemoGuard>
-          <Transactions />
-        </DemoGuard>
-      } />
-      <Route path="/analytics" element={
-        <DemoGuard>
-          <Analytics />
-        </DemoGuard>
-      } />
-      <Route path="/portfolio" element={
-        <DemoGuard>
-          <PortfolioPage />
-        </DemoGuard>
-      } />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/expenses" element={<Expenses />} />
+      <Route path="/transactions" element={<Transactions />} />
+      <Route path="/analytics" element={<Analytics />} />
+      <Route path="/portfolio" element={<PortfolioPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
