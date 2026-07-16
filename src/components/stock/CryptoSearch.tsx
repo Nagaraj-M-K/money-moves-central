@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Loader2, Star, TrendingUp, TrendingDown } from "lucide-react";
+import { Search, Plus, Loader2, Star, TrendingUp, TrendingDown, LineChart } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
