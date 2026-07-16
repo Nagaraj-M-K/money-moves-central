@@ -18,7 +18,8 @@ export default function EnhancedUSStockSearch() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const { toast } = useToast();
+
+
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
