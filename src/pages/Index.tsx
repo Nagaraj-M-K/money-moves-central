@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 const Index = () => {
   const { user } = useAuth();
   const { stats, loading } = useUserData();
+  const isTrial = !user || user.isDemo;
 
   const features = [
     {
@@ -46,7 +47,7 @@ const Index = () => {
       <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Free Trial Notice */}
-        {!user && (
+        {isTrial && (
           <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-8 animate-fade-in">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -66,7 +67,7 @@ const Index = () => {
         )}
 
         {/* Beta Notice */}
-        {user && (
+        {user && !user.isDemo && (
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-8 animate-fade-in">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="h-5 w-5 text-blue-600" />

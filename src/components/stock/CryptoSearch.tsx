@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { addDemoItem, deleteDemoItem, getDemoData } from '@/lib/demoStorage';
 
 interface CryptoData {
   id: string;
@@ -41,9 +42,7 @@ export default function CryptoSearch() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchWatchlist();
-    }
+    fetchWatchlist();
   }, [user]);
 
   const fetchCryptoData = async () => {
@@ -70,7 +69,10 @@ export default function CryptoSearch() {
   };
 
   const fetchWatchlist = async () => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      setWatchlist(getDemoData<any>('watchlist').filter(item => (item.stock_type ?? item.stockType) === 'crypto'));
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -126,11 +128,19 @@ export default function CryptoSearch() {
   };
 
   const addToWatchlist = async (crypto: CryptoData) => {
-    if (!user) {
+    if (!user || user.isDemo) {
+      const savedCrypto = addDemoItem('watchlist', {
+        symbol: crypto.symbol.toUpperCase(),
+        name: crypto.name,
+        stock_type: 'crypto',
+        price: crypto.current_price,
+        change_percent: crypto.price_change_percentage_24h,
+        market_cap: crypto.market_cap
+      });
+      setWatchlist(prev => [...prev, savedCrypto]);
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to add cryptocurrencies to your watchlist.",
-        variant: "destructive",
+        title: "Added to Watchlist",
+        description: `${crypto.name} has been added to your trial watchlist.`,
       });
       return;
     }
@@ -166,7 +176,15 @@ export default function CryptoSearch() {
   };
 
   const removeFromWatchlist = async (cryptoId: string) => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      deleteDemoItem('watchlist', cryptoId);
+      setWatchlist(prev => prev.filter(item => item.id !== cryptoId));
+      toast({
+        title: "Removed from Watchlist",
+        description: "Cryptocurrency has been removed from your watchlist.",
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -418,7 +436,7 @@ export default function CryptoSearch() {
       </div>
 
       {/* Watchlist */}
-      {user && (
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
         <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -480,7 +498,6 @@ export default function CryptoSearch() {
             )}
           </CardContent>
         </Card>
-      )}
     </div>
   );
 }

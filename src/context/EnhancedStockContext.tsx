@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { addDemoItem, deleteDemoItem, getDemoData } from '@/lib/demoStorage';
 
 interface Stock {
   id?: string;
@@ -35,15 +36,28 @@ export function EnhancedStockProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const formatWatchlistItem = (item: any): Stock => ({
+    id: item.id,
+    symbol: item.symbol,
+    name: item.name,
+    price: Number(item.price) || 0,
+    change: Number(item.change) || 0,
+    changePercent: Number(item.change_percent ?? item.changePercent) || 0,
+    marketCap: item.market_cap ?? item.marketCap,
+    exchange: item.exchange,
+    stockType: (item.stock_type ?? item.stockType) as 'us' | 'indian' | 'crypto',
+  });
+
   // Load watchlist from Supabase
   useEffect(() => {
-    if (user) {
-      loadWatchlist();
-    }
+    loadWatchlist();
   }, [user]);
 
   const loadWatchlist = async () => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      setWatchlist(getDemoData('watchlist').map(formatWatchlistItem));
+      return;
+    }
     
     try {
       setLoading(true);
@@ -54,17 +68,7 @@ export function EnhancedStockProvider({ children }: { children: ReactNode }) {
       
       if (error) throw error;
       
-      const formattedStocks = data?.map(item => ({
-        id: item.id,
-        symbol: item.symbol,
-        name: item.name,
-        price: Number(item.price) || 0,
-        change: 0,
-        changePercent: Number(item.change_percent) || 0,
-        marketCap: item.market_cap,
-        exchange: item.exchange,
-        stockType: item.stock_type as 'us' | 'indian' | 'crypto'
-      })) || [];
+      const formattedStocks = data?.map(formatWatchlistItem) || [];
       
       setWatchlist(formattedStocks);
     } catch (err: any) {
@@ -80,11 +84,24 @@ export function EnhancedStockProvider({ children }: { children: ReactNode }) {
   };
 
   const addToWatchlist = async (stock: Stock) => {
-    if (!user) {
+    if (!user || user.isDemo) {
+      const exists = watchlist.some(item => item.symbol === stock.symbol && item.stockType === stock.stockType);
+      if (exists) return;
+
+      const savedStock = addDemoItem('watchlist', {
+        symbol: stock.symbol,
+        name: stock.name,
+        stock_type: stock.stockType,
+        price: stock.price,
+        change_percent: stock.changePercent,
+        market_cap: stock.marketCap,
+        exchange: stock.exchange,
+      });
+
+      setWatchlist(prev => [...prev, formatWatchlistItem(savedStock)]);
       toast({
-        title: "Login Required",
-        description: "Please login to add stocks to your watchlist",
-        variant: "destructive"
+        title: "Stock Added",
+        description: `${stock.symbol} added to your watchlist`,
       });
       return;
     }
@@ -124,7 +141,18 @@ export function EnhancedStockProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromWatchlist = async (symbol: string, stockType: string) => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      const item = getDemoData<any>('watchlist').find(
+        stock => stock.symbol === symbol && (stock.stock_type ?? stock.stockType) === stockType
+      );
+      if (item?.id) deleteDemoItem('watchlist', item.id);
+      setWatchlist(prev => prev.filter(stock => !(stock.symbol === symbol && stock.stockType === stockType)));
+      toast({
+        title: "Stock Removed",
+        description: `${symbol} removed from your watchlist`,
+      });
+      return;
+    }
 
     try {
       setLoading(true);

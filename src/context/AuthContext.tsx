@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { getDemoUser, isDemoModeActive, setDemoModeActive, updateDemoUser } from '@/lib/demoStorage';
 
 interface AuthUser {
   id: string;
   email: string;
   name: string;
   photoURL?: string;
+  isDemo?: boolean;
 }
 
 interface AuthContextType {
@@ -23,6 +25,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getAuthUserFromSession(session: Session): AuthUser {
+  const email = session.user.email || `${session.user.id}@user.money.moves`;
+  return {
+    id: session.user.id,
+    email,
+    name: session.user.user_metadata?.full_name || 
+          session.user.user_metadata?.name || 
+          session.user.user_metadata?.display_name ||
+          email.split('@')[0],
+    photoURL: session.user.user_metadata?.avatar_url || 
+             session.user.user_metadata?.picture,
+    isDemo: false,
+  };
+}
+
+function getAuthUserFromDemo(): AuthUser {
+  const demoUser = getDemoUser();
+  return {
+    id: demoUser.id,
+    email: demoUser.email,
+    name: demoUser.name,
+    photoURL: demoUser.photoURL,
+    isDemo: true,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -36,17 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         
         if (session?.user) {
-          // Create user profile
-          const authUser: AuthUser = {
-            id: session.user.id,
-            email: session.user.email!,
-            name: session.user.user_metadata?.full_name || 
-                  session.user.user_metadata?.name || 
-                  session.user.user_metadata?.display_name ||
-                  session.user.email!.split('@')[0],
-            photoURL: session.user.user_metadata?.avatar_url || 
-                     session.user.user_metadata?.picture
-          };
+          setDemoModeActive(false);
+          const authUser = getAuthUserFromSession(session);
           setUser(authUser);
 
           // Create profile for all users (authenticated and anonymous)
@@ -73,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }, 0);
         } else {
-          setUser(null);
+          setUser(isDemoModeActive() ? getAuthUserFromDemo() : null);
         }
         setLoading(false);
       }
@@ -88,17 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Initial session:', session);
       if (session) {
         setSession(session);
-        const authUser: AuthUser = {
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata?.full_name || 
-                session.user.user_metadata?.name || 
-                session.user.user_metadata?.display_name ||
-                session.user.email!.split('@')[0],
-          photoURL: session.user.user_metadata?.avatar_url || 
-                   session.user.user_metadata?.picture
-        };
-        setUser(authUser);
+        setDemoModeActive(false);
+        setUser(getAuthUserFromSession(session));
+      } else if (isDemoModeActive()) {
+        setUser(getAuthUserFromDemo());
       }
       setLoading(false);
     });
@@ -108,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setDemoModeActive(false);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -124,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      setDemoModeActive(false);
       const { lovable } = await import('@/integrations/lovable/index');
       const result = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: window.location.origin,
@@ -137,58 +151,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 
   const signInDemo = async () => {
-    const DEMO_KEY = 'money-moves-demo-credentials';
-    const stored = localStorage.getItem(DEMO_KEY);
-
-    let demoEmail: string;
-    let demoPassword: string;
-
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      demoEmail = parsed.email;
-      demoPassword = parsed.password;
-    } else {
-      // Generate a unique demo account per browser/device
-      const id = Math.random().toString(36).substring(2, 15);
-      demoEmail = `demo-${id}@money.moves.app`;
-      demoPassword = `${Math.random().toString(36).substring(2)}${Date.now()}`;
-      localStorage.setItem(DEMO_KEY, JSON.stringify({ email: demoEmail, password: demoPassword }));
-    }
-
-    try {
-      // Try signing in first
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
-      });
-
-      if (!signInError) {
-        console.log('Demo sign in successful');
-        return;
-      }
-
-      // If account doesn't exist, create it
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: demoEmail,
-        password: demoPassword,
-        options: {
-          data: {
-            full_name: 'Demo User',
-          }
-        }
-      });
-
-      if (signUpError) throw signUpError;
-      
-      console.log('Demo account created and signed in');
-    } catch (error) {
-      console.error('Demo sign in error:', error);
-      throw error;
-    }
+    setDemoModeActive(true);
+    setSession(null);
+    setUser(getAuthUserFromDemo());
+    setLoading(false);
+    console.log('Local free trial started');
   };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      setDemoModeActive(false);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -211,8 +183,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      setDemoModeActive(false);
+      if (!user?.isDemo) {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      }
       
       setUser(null);
       setSession(null);
@@ -226,6 +201,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (data: Partial<AuthUser>) => {
     try {
       if (!user) throw new Error('No user logged in');
+
+      if (user.isDemo) {
+        const updatedDemoUser = updateDemoUser({
+          name: data.name || user.name,
+          photoURL: data.photoURL,
+        });
+        setUser({
+          id: updatedDemoUser.id,
+          email: updatedDemoUser.email,
+          name: updatedDemoUser.name,
+          photoURL: updatedDemoUser.photoURL,
+          isDemo: true,
+        });
+        return;
+      }
       
       // Update auth metadata
       const { error: authError } = await supabase.auth.updateUser({

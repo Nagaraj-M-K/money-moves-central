@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { addDemoItem, deleteDemoItem, getDemoData } from '@/lib/demoStorage';
 
 interface IndianStock {
   symbol: string;
@@ -67,13 +68,14 @@ export default function IndianStockSearch() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchWatchlist();
-    }
+    fetchWatchlist();
   }, [user]);
 
   const fetchWatchlist = async () => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      setWatchlist(getDemoData<any>('watchlist').filter(item => (item.stock_type ?? item.stockType) === 'indian'));
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -107,11 +109,19 @@ export default function IndianStockSearch() {
   };
 
   const addToWatchlist = async (stock: IndianStock) => {
-    if (!user) {
+    if (!user || user.isDemo) {
+      const savedStock = addDemoItem('watchlist', {
+        symbol: stock.symbol,
+        name: stock.name,
+        stock_type: 'indian',
+        price: stock.price,
+        change_percent: stock.changePercent,
+        exchange: stock.exchange
+      });
+      setWatchlist(prev => [...prev, savedStock]);
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to add stocks to your watchlist.",
-        variant: "destructive",
+        title: "Added to Watchlist",
+        description: `${stock.name} has been added to your trial watchlist.`,
       });
       return;
     }
@@ -147,7 +157,15 @@ export default function IndianStockSearch() {
   };
 
   const removeFromWatchlist = async (stockId: string) => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      deleteDemoItem('watchlist', stockId);
+      setWatchlist(prev => prev.filter(item => item.id !== stockId));
+      toast({
+        title: "Removed from Watchlist",
+        description: "Stock has been removed from your watchlist.",
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -335,7 +353,7 @@ export default function IndianStockSearch() {
       </div>
 
       {/* Watchlist */}
-      {user && (
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
         <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -392,7 +410,6 @@ export default function IndianStockSearch() {
             )}
           </CardContent>
         </Card>
-      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@ const Transactions = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      if (user) {
+      if (user && !user.isDemo) {
         const { data, error } = await supabase
           .from('transactions')
           .select('*')
@@ -68,7 +68,7 @@ const Transactions = () => {
 
   // Set up real-time subscription for transactions (authenticated users only)
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isDemo) return;
 
     const channel = supabase
       .channel('transactions-changes')
@@ -94,7 +94,7 @@ const Transactions = () => {
 
   const handleAddTransaction = async (transactionData: any) => {
     try {
-      if (user) {
+      if (user && !user.isDemo) {
         const { data, error } = await supabase
           .from('transactions')
           .insert([
@@ -138,7 +138,7 @@ const Transactions = () => {
 
   const handleUpdateTransaction = async (id: string, updatedData: any) => {
     try {
-      if (user) {
+      if (user && !user.isDemo) {
         const { data, error } = await supabase
           .from('transactions')
           .update(updatedData)
@@ -178,7 +178,7 @@ const Transactions = () => {
 
   const handleDeleteTransaction = async (id: string) => {
     try {
-      if (user) {
+      if (user && !user.isDemo) {
         const { error } = await supabase
           .from('transactions')
           .delete()
