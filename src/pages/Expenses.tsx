@@ -42,7 +42,7 @@ const Expenses = () => {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      if (user) {
+      if (user && !user.isDemo) {
         const { data, error } = await supabase
           .from('expenses')
           .select('*')
@@ -83,7 +83,7 @@ const Expenses = () => {
     }
 
     try {
-      if (user) {
+      if (user && !user.isDemo) {
         const { data, error } = await supabase
           .from('expenses')
           .insert([

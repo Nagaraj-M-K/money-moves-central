@@ -33,7 +33,7 @@ export function useUserData() {
       let transactions: any[] = [];
       let watchlist: any[] = [];
 
-      if (user) {
+      if (user && !user.isDemo) {
         // Fetch from Supabase for authenticated users
         const { data: expData } = await supabase
           .from('expenses')
@@ -104,7 +104,7 @@ export function useUserData() {
 
   // Set up real-time subscriptions for live updates
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isDemo) return;
 
     const expensesChannel = supabase
       .channel('expenses-changes')

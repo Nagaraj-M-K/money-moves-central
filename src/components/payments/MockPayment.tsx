@@ -30,7 +30,14 @@ export default function MockPayment({ planId, planName, price, onSuccess }: Mock
   });
 
   const handlePayment = async () => {
-    if (!user) return;
+    if (!user || user.isDemo) {
+      toast({
+        title: "Account Required",
+        description: "Create an account or sign in before subscribing.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsProcessing(true);
     

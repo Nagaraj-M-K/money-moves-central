@@ -1,4 +1,5 @@
 const DEMO_USER_KEY = 'money-moves-demo-user';
+const DEMO_ACTIVE_KEY = 'money-moves-demo-active';
 
 function generateId(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -12,7 +13,20 @@ export interface DemoUser {
   id: string;
   email: string;
   name: string;
+  photoURL?: string;
   createdAt: string;
+}
+
+export function isDemoModeActive(): boolean {
+  return localStorage.getItem(DEMO_ACTIVE_KEY) === 'true';
+}
+
+export function setDemoModeActive(active: boolean) {
+  if (active) {
+    localStorage.setItem(DEMO_ACTIVE_KEY, 'true');
+  } else {
+    localStorage.removeItem(DEMO_ACTIVE_KEY);
+  }
 }
 
 export function getDemoUser(): DemoUser {
@@ -28,6 +42,12 @@ export function getDemoUser(): DemoUser {
   };
   localStorage.setItem(DEMO_USER_KEY, JSON.stringify(demoUser));
   return demoUser;
+}
+
+export function updateDemoUser(updates: Partial<DemoUser>): DemoUser {
+  const updatedUser = { ...getDemoUser(), ...updates };
+  localStorage.setItem(DEMO_USER_KEY, JSON.stringify(updatedUser));
+  return updatedUser;
 }
 
 function getDemoStorageKey(table: string) {
@@ -81,4 +101,5 @@ export function clearDemoData() {
     localStorage.removeItem(`money-moves-demo-${table}-${user.id}`);
   });
   localStorage.removeItem(DEMO_USER_KEY);
+  localStorage.removeItem(DEMO_ACTIVE_KEY);
 }

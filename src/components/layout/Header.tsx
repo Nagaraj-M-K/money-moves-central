@@ -9,13 +9,18 @@ import { useAuth } from '@/context/AuthContext';
 import { LogOut, User, Menu, Wallet, TrendingUp, CreditCard, BarChart3, Home } from 'lucide-react';
 
 export default function Header() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, signInDemo } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/signin');
+  };
+
+  const handleFreeTrial = async () => {
+    await signInDemo();
+    navigate('/');
   };
 
   const navigationItems = [
@@ -26,7 +31,7 @@ export default function Header() {
     { name: 'Portfolio', href: '/portfolio', icon: TrendingUp },
   ];
 
-  const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'U';
+  const userInitials = user?.isDemo ? 'DU' : user?.email?.slice(0, 2).toUpperCase() || 'U';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -117,7 +122,12 @@ export default function Header() {
             </SheetContent>
           </Sheet>
 
-          {/* Desktop User Dropdown */}
+          {!user ? (
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleFreeTrial}>Free Trial</Button>
+              <Button size="sm" asChild><Link to="/signin">Sign In</Link></Button>
+            </div>
+          ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="hidden md:flex">
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -132,9 +142,9 @@ export default function Header() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user?.email}</p>
+                  <p className="font-medium">{user?.isDemo ? 'Demo User' : user?.email}</p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    Finance Account
+                    {user?.isDemo ? 'Free Trial' : 'Finance Account'}
                   </p>
                 </div>
               </div>
@@ -152,6 +162,7 @@ export default function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
       </div>
     </header>

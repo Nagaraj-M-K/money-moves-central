@@ -19,7 +19,7 @@ const Analytics = () => {
     try {
       setLoading(true);
       
-      if (user) {
+      if (user && !user.isDemo) {
         // Fetch user-specific transactions
         const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
@@ -63,7 +63,7 @@ const Analytics = () => {
 
   // Set up real-time subscriptions (authenticated users only)
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isDemo) return;
 
     const transactionsChannel = supabase
       .channel('analytics-transactions')
