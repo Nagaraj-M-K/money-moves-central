@@ -336,9 +336,11 @@ export default function IndianStockSearch() {
               {topLosers.map((stock, index) => (
                 <div
                   key={stock.symbol}
-                  className="flex items-center justify-between p-3 hover:bg-red-50 rounded-lg transition-all duration-200 animate-slide-up"
+                  onClick={() => navigate(`/stock/indian/${stock.symbol}`)}
+                  className="flex items-center justify-between p-3 hover:bg-red-50 rounded-lg transition-all duration-200 animate-slide-up cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+
                   <div>
                     <div className="font-semibold">{stock.symbol}</div>
                     <div className="text-sm text-gray-600">₹{stock.price.toFixed(2)}</div>
