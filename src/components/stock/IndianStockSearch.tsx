@@ -21,18 +21,7 @@ interface IndianStock {
   exchange: string;
 }
 
-const mockIndianStocks: IndianStock[] = [
-  { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', price: 2456.30, change: 45.20, changePercent: 1.88, exchange: 'NSE' },
-  { symbol: 'TCS', name: 'Tata Consultancy Services', price: 3892.45, change: -32.15, changePercent: -0.82, exchange: 'NSE' },
-  { symbol: 'INFY', name: 'Infosys Limited', price: 1654.20, change: 28.75, changePercent: 1.77, exchange: 'NSE' },
-  { symbol: 'HDFC', name: 'HDFC Bank Limited', price: 1587.90, change: -12.45, changePercent: -0.78, exchange: 'NSE' },
-  { symbol: 'ICICIBANK', name: 'ICICI Bank Limited', price: 987.35, change: 18.90, changePercent: 1.95, exchange: 'NSE' },
-  { symbol: 'BHARTIARTL', name: 'Bharti Airtel Limited', price: 876.40, change: -8.60, changePercent: -0.97, exchange: 'NSE' },
-  { symbol: 'ITC', name: 'ITC Limited', price: 432.15, change: 6.25, changePercent: 1.47, exchange: 'NSE' },
-  { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', price: 1789.80, change: -15.30, changePercent: -0.85, exchange: 'NSE' },
-  { symbol: 'LT', name: 'Larsen & Toubro', price: 2345.60, change: 42.10, changePercent: 1.83, exchange: 'NSE' },
-  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: 2567.85, change: -22.40, changePercent: -0.86, exchange: 'NSE' }
-];
+const FUNCTIONS_URL = `https://bsdmvyrrfugisvhpblyg.supabase.co/functions/v1/indian-stocks`;
 
 export default function IndianStockSearch() {
   const [query, setQuery] = useState('');
@@ -45,26 +34,29 @@ export default function IndianStockSearch() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const fetchLive = async (): Promise<IndianStock[]> => {
+    try {
+      const res = await fetch(FUNCTIONS_URL);
+      const json = await res.json();
+      return (json.stocks || []) as IndianStock[];
+    } catch (e) {
+      console.error('live indian stocks failed', e);
+      return [];
+    }
+  };
 
   useEffect(() => {
-    // Simulate real-time data with slight variations
-    const updateData = () => {
-      const updatedStocks = mockIndianStocks.map(stock => ({
-        ...stock,
-        price: stock.price + (Math.random() - 0.5) * 20,
-        change: stock.change + (Math.random() - 0.5) * 10,
-        changePercent: stock.changePercent + (Math.random() - 0.5) * 2
-      }));
-
-      const sorted = [...updatedStocks].sort((a, b) => b.changePercent - a.changePercent);
+    let mounted = true;
+    const load = async () => {
+      const stocks = await fetchLive();
+      if (!mounted || stocks.length === 0) return;
+      const sorted = [...stocks].sort((a, b) => b.changePercent - a.changePercent);
       setTopGainers(sorted.slice(0, 5));
       setTopLosers(sorted.slice(-5).reverse());
     };
-
-    updateData();
-    const interval = setInterval(updateData, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
+    load();
+    const interval = setInterval(load, 60000);
+    return () => { mounted = false; clearInterval(interval); };
   }, []);
 
   useEffect(() => {
@@ -91,22 +83,24 @@ export default function IndianStockSearch() {
     }
   };
 
-  const searchStocks = () => {
+  const searchStocks = async () => {
     if (!query.trim()) {
       setSearchResults([]);
       return;
     }
-
     setLoading(true);
-    setTimeout(() => {
-      const filtered = mockIndianStocks.filter(stock =>
-        stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
-        stock.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered);
+    try {
+      const res = await fetch(`${FUNCTIONS_URL}?q=${encodeURIComponent(query)}`);
+      const json = await res.json();
+      setSearchResults((json.stocks || []) as IndianStock[]);
+    } catch (e) {
+      console.error(e);
+      setSearchResults([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
+
 
   const addToWatchlist = async (stock: IndianStock) => {
     if (!user || user.isDemo) {
@@ -244,9 +238,11 @@ export default function IndianStockSearch() {
               {searchResults.map((stock, index) => (
                 <div
                   key={stock.symbol}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-all duration-200 animate-scale-in hover:shadow-md"
+                  onClick={() => navigate(`/stock/indian/${stock.symbol}`)}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-all duration-200 animate-scale-in hover:shadow-md cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-lg">{stock.symbol}</span>
@@ -263,6 +259,7 @@ export default function IndianStockSearch() {
                       </div>
                     </div>
                   </div>
+                  <div onClick={(e) => e.stopPropagation()}>
                   {isInWatchlist(stock.symbol) ? (
                     <Button
                       variant="outline"
@@ -286,7 +283,9 @@ export default function IndianStockSearch() {
                       Add to Watchlist
                     </Button>
                   )}
+                  </div>
                 </div>
+
               ))}
             </div>
           )}
@@ -307,9 +306,11 @@ export default function IndianStockSearch() {
               {topGainers.map((stock, index) => (
                 <div
                   key={stock.symbol}
-                  className="flex items-center justify-between p-3 hover:bg-green-50 rounded-lg transition-all duration-200 animate-slide-up"
+                  onClick={() => navigate(`/stock/indian/${stock.symbol}`)}
+                  className="flex items-center justify-between p-3 hover:bg-green-50 rounded-lg transition-all duration-200 animate-slide-up cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+
                   <div>
                     <div className="font-semibold">{stock.symbol}</div>
                     <div className="text-sm text-gray-600">₹{stock.price.toFixed(2)}</div>
@@ -335,9 +336,11 @@ export default function IndianStockSearch() {
               {topLosers.map((stock, index) => (
                 <div
                   key={stock.symbol}
-                  className="flex items-center justify-between p-3 hover:bg-red-50 rounded-lg transition-all duration-200 animate-slide-up"
+                  onClick={() => navigate(`/stock/indian/${stock.symbol}`)}
+                  className="flex items-center justify-between p-3 hover:bg-red-50 rounded-lg transition-all duration-200 animate-slide-up cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+
                   <div>
                     <div className="font-semibold">{stock.symbol}</div>
                     <div className="text-sm text-gray-600">₹{stock.price.toFixed(2)}</div>
