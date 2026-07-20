@@ -238,9 +238,11 @@ export default function IndianStockSearch() {
               {searchResults.map((stock, index) => (
                 <div
                   key={stock.symbol}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-all duration-200 animate-scale-in hover:shadow-md"
+                  onClick={() => navigate(`/stock/indian/${stock.symbol}`)}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-all duration-200 animate-scale-in hover:shadow-md cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-lg">{stock.symbol}</span>
