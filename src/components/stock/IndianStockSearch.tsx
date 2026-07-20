@@ -259,6 +259,7 @@ export default function IndianStockSearch() {
                       </div>
                     </div>
                   </div>
+                  <div onClick={(e) => e.stopPropagation()}>
                   {isInWatchlist(stock.symbol) ? (
                     <Button
                       variant="outline"
@@ -282,7 +283,9 @@ export default function IndianStockSearch() {
                       Add to Watchlist
                     </Button>
                   )}
+                  </div>
                 </div>
+
               ))}
             </div>
           )}
